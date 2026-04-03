@@ -133,7 +133,7 @@ export const redirectAllowlist = new Set([
 ])
 
 // Исправлена Open Redirect-уязвимость:
-// теперь разрешены только URL из redirectAllowlist.
+// теперь разрешены только URL, полностью совпадающие с redirectAllowlist
 export const isRedirectAllowed = (url: string) => {
   return redirectAllowlist.has(url)
 }
