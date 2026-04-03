@@ -132,12 +132,10 @@ export const redirectAllowlist = new Set([
   'http://leanpub.com/juice-shop'
 ])
 
+// Исправлена Open Redirect-уязвимость:
+// теперь разрешены только URL, полностью совпадающие с redirectAllowlist
 export const isRedirectAllowed = (url: string) => {
-  let allowed = false
-  for (const allowedUrl of redirectAllowlist) {
-    allowed = allowed || url.includes(allowedUrl) // vuln-code-snippet vuln-line redirectChallenge
-  }
-  return allowed
+  return redirectAllowlist.has(url)
 }
 // vuln-code-snippet end redirectCryptoCurrencyChallenge redirectChallenge
 
