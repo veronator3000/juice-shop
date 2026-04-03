@@ -6,6 +6,45 @@
 import { type Request, type Response, type NextFunction } from 'express'
 import { CaptchaModel } from '../models/captcha'
 
+function calculateCaptchaAnswer (
+    firstTerm: number,
+    firstOperator: string,
+    secondTerm: number,
+    secondOperator: string,
+    thirdTerm: number
+): number {
+  if (firstOperator === '*') {
+    const firstResult = firstTerm * secondTerm
+    return secondOperator === '+'
+        ? firstResult + thirdTerm
+        : secondOperator === '-'
+            ? firstResult - thirdTerm
+            : firstResult * thirdTerm
+  }
+
+  if (secondOperator === '*') {
+    const secondResult = secondTerm * thirdTerm
+    return firstOperator === '+'
+        ? firstTerm + secondResult
+        : firstOperator === '-'
+            ? firstTerm - secondResult
+            : firstTerm * secondResult
+  }
+
+  const intermediateResult =
+      firstOperator === '+'
+          ? firstTerm + secondTerm
+          : firstOperator === '-'
+              ? firstTerm - secondTerm
+              : firstTerm * secondTerm
+
+  return secondOperator === '+'
+      ? intermediateResult + thirdTerm
+      : secondOperator === '-'
+          ? intermediateResult - thirdTerm
+          : intermediateResult * thirdTerm
+}
+
 export function captchas () {
   return async (req: Request, res: Response) => {
     const captchaId = req.app.locals.captchaId++
@@ -19,7 +58,15 @@ export function captchas () {
     const secondOperator = operators[Math.floor((Math.random() * 3))]
 
     const expression = firstTerm.toString() + firstOperator + secondTerm.toString() + secondOperator + thirdTerm.toString()
-    const answer = eval(expression).toString() // eslint-disable-line no-eval
+    // Исправлено использование eval():
+    // теперь выражение считается безопасно без выполнения строки как кода
+    const answer = calculateCaptchaAnswer(
+        firstTerm,
+        firstOperator,
+        secondTerm,
+        secondOperator,
+        thirdTerm
+    ).toString()
 
     const captcha = {
       captchaId,
@@ -44,3 +91,4 @@ export const verifyCaptcha = () => async (req: Request, res: Response, next: Nex
     next(error)
   }
 }
+
